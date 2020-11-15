@@ -32,11 +32,18 @@ def getPapersTitleAndPathsFromZoteroCollection(zotero, collection_id, STORAGE_BA
     papers = []
     collection_items = zotero.collection_items(collection_id);
     for item in collection_items:
-        if(item.get('data').get('contentType') == 'application/pdf') and item.get('data').get('linkMode') == 'linked_file':
-            item_pdf_path = STORAGE_BASE_PATH + item.get('data').get('path')[12:]
-            item_title = item.get('data').get('title')[:-4]
-            if (item_pdf_path and item_title):
-                papers.append({ 'title': item_title, 'path': item_pdf_path })
+        data = item.get('data')
+        if data.get('contentType') == 'application/pdf':
+            if data.get('linkMode') == 'linked_file':
+                item_pdf_path = os.path.join(STORAGE_BASE_PATH, 'storage', data.get('key'), data.get('title'))
+                item_title = data.get('title')[:-4]
+                if (item_pdf_path and item_title):
+                    papers.append({ 'title': item_title, 'path': item_pdf_path })
+            elif data.get('linkMode') in ['imported_url', 'imported_file']:
+                item_pdf_path = os.path.join(STORAGE_BASE_PATH, 'storage', data.get('key'), data.get('filename'))
+                item_title = item.get('data').get('filename')[:-4]
+                if (item_pdf_path and item_title):
+                    papers.append({ 'title': item_title, 'path': item_pdf_path })
     return papers
 
 def getPapersFromRemarkable(RMAPI_LS):
